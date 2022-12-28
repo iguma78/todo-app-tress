@@ -4,6 +4,7 @@ import { Row } from "@/types/Row";
 import TextRow from "@/components/TextRow.vue"
 
 const rows = ref([] as Row[]);
+
 onMounted(() => {
   let localStorageRows = localStorage.getItem('rows');
   if (localStorageRows) {
@@ -67,6 +68,7 @@ const columns = [
 <template>
   <div class="app">
     <q-btn color="primary" @click="addRow" icon="add" class="add-button"></q-btn>
+   
     <q-table title="To Do" :rows="rows" :columns="columns" row-key="name" binary-state-sort>
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -75,35 +77,14 @@ const columns = [
             <!-- // text component -->
             <text-row v-if="col.type === 'text'" :text="props.row[col.name]" :isLineThrough="props.row.completed"
               @change="(value) => onChange(value, props.row, col.name)"></text-row>
-            <!-- <template v-if="col.type === 'text'"> -->
-            <!-- <span :class="{ 'line-through': props.row.completed }">{{ props.row[col.name] }}</span>
-              <q-popup-edit v-model="props.row[col.name]" buttons v-slot="scope">
-                <q-input v-model="scope.value" autofocus />
-              </q-popup-edit> -->
 
-            <!-- </template> -->
             <!-- // checkbox component -->
             <q-checkbox v-else-if="col.type === 'checkbox'" v-model="props.row[col.name]"></q-checkbox>
 
             <!-- // btn component -->
             <q-btn v-else-if="col.type === 'action'" color="negative" :icon-right="col.name" no-caps flat dense
               @click="col.action(rows.indexOf(props.row))" />
-
           </q-td>
-
-          <!-- <q-td key="name" :props="props" :class="{'line-through': props.row.completed}">
-            {{ props.row.name }}
-            <q-popup-edit v-model="props.row.name" buttons v-slot="scope">
-              <q-input v-model="scope.value" dense autofocus counter />
-            </q-popup-edit>
-          </q-td> 
-          <q-td key="completed" :props="props">
-            <q-checkbox v-model="props.row.completed" />
-          </q-td>
-          <q-td key="delete" :props="props">
-            <q-btn color="negative" icon-right="delete" no-caps flat dense
-              @click="deleteRow(rows.indexOf(props.row))" />
-          </q-td> -->
         </q-tr>
       </template>
     </q-table>
