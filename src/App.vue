@@ -17,7 +17,6 @@ watch(
   rows => {
     if (rows) {
       localStorage.setItem('rows', JSON.stringify(rows.value));
-      console.log('settings have changed', rows.value);
     }
   },
   { deep: true },
@@ -33,14 +32,14 @@ const addRow = () => {
   ]
 }
 
-const deleteRow = (index) => {
+const deleteRow = (index: number) => {
   rows.value.splice(index, 1);
 }
 
-const onChange = (value, row, name) => {
+const onChange = (value: string, row: any, name: string) => {
   row[name] = value;
 }
-const columns = [
+const columns: any[]= [
   {
     type: 'text',
     name: 'name',
@@ -111,7 +110,7 @@ const columns = [
   padding: 0.375rem 1rem 0.3125rem;
   align-self: flex-end;
   color: #fff;
-  box-shadow: 0 4px 9px -4px #3b71ca;
+  box-shadow: 0 4px 9px -4px #ffffff;
   margin-bottom: 20px;
 }
 </style>
