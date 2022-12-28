@@ -12,7 +12,6 @@ const value = ref('');
 watch(
     () => value,
     value => {
-        debugger;
         emit('change', value.value)
     },
     { deep: true },
