@@ -1,0 +1,28 @@
+// It's highly recommended to change the default colors
+// to match your app's branding.
+
+$primary: rgba(68, 39, 105, 1);
+$secondary: rgba(254, 134, 121, 1);
+$accent: rgba(147, 83, 255, 1);
+
+$dark: #1d1d1d;
+
+$positive: #21ba45;
+$negative: rgba(255, 25, 0, 1);
+$info: #31ccec;
+$warning: #f2c037;
+
+$typography-font-family: Inter;
+$generic-border-radius: 10px !default;
+
+$button-border-radius: 10px;
+$button-font-weight: 700;
+
+$input-font-size: 20px !default;
+$input-text-color: rgba(80, 80, 80, 1);
+
+$tooltip-color: #868686 !default;
+$tooltip-background: white !default;
+$tooltip-fontsize: 15px !default;
+
+@import "~quasar-variables-styl";
