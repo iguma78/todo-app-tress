@@ -4,6 +4,7 @@ import { Row } from "@/types/Row";
 import TextRow from "@/components/TextRow.vue"
 
 const rows = ref([] as Row[]);
+const filter = ref(false)
 
 onMounted(() => {
   let localStorageRows = localStorage.getItem('rows');
@@ -39,6 +40,11 @@ const deleteRow = (index: number) => {
 const onChange = (value: string, row: any, name: string) => {
   row[name] = value;
 }
+
+const onFilter = (rows, terms, cols, getCellValue) => {
+  return rows.filter((row: any) => row.completed === terms);
+}
+
 const columns: any[]= [
   {
     type: 'text',
@@ -68,7 +74,11 @@ const columns: any[]= [
   <div class="app">
     <q-btn color="primary" @click="addRow" icon="add" class="add-button"></q-btn>
    
-    <q-table title="To Do" :rows="rows" :columns="columns" row-key="name" binary-state-sort>
+    <q-table title="To Do" :rows="rows" :columns="columns" :filter-method="onFilter" :filter="filter" row-key="name" binary-state-sort>
+      <template v-slot:top-right>
+        <q-checkbox  v-model="filter" label="Show only completed"></q-checkbox>
+      </template>
+    
       <template v-slot:body="props">
         <q-tr :props="props">
           <q-td v-for="col in columns" :key="col.name" :props="props">
