@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 import { Row } from "@/types/Row";
-import TextRow from "@/components/TextRow.vue"
+import GenericRow from "@/components/GenericRow.vue"
 
 const rows = ref([] as Row[]);
 const filter = ref({ isChecked: false })
@@ -23,81 +23,123 @@ watch(
   { deep: true },
 )
 
+const clearCompleted = () => {
+  const rowsToDelete: any[] = [];
+  const subItemsToDelete: any[] = [];
+
+  rows.value.forEach((row) => {
+    if (row.completed) {
+      rowsToDelete.push(row);
+    }
+    row.subItems?.forEach((item) => {
+      if (item.completed) {
+        subItemsToDelete.push(item);
+      }
+    });
+    subItemsToDelete.forEach(index => {
+      deleteRow(row.subItems as Row[], (row.subItems as Row[]).indexOf(index));
+    });
+  })
+
+  rowsToDelete.forEach(index => {
+    deleteRow(rows.value, rows.value.indexOf(index));
+  })
+}
+
 const addRow = () => {
   rows.value = [
     ...rows.value,
     {
       name: '',
       completed: false,
+      subItems: [],
+      isVisible: true,
     }
   ]
 }
 
-const deleteRow = (index: number) => {
-  rows.value.splice(index, 1);
+const deleteRow = (items: Row[], index: number) => {
+  items.splice(index, 1);
+}
+
+const addSubItem = (row: Row) => {
+  (row.subItems as Row[]).push(
+    {
+      name: '',
+      completed: false,
+      isVisible: true,
+    }
+  )
 }
 
 const onChange = (value: string, row: any, name: string) => {
   row[name] = value;
 }
+
 const onFilter = (rows: any[], terms: any) => {
   if (terms.isChecked) {
-    return rows.filter((row: any) => row.completed === terms.isChecked);
+    rows.forEach((row: any) => {
+      row.subItems.forEach((item: any) => {
+        item.isVisible = item.completed === terms.isChecked;
+      })
+      row.isVisible = row.completed === terms.isChecked;
+    });
+  } else {
+    rows.forEach((row: any) => {
+      row.subItems.forEach((item: any) => {
+        item.isVisible = true;
+      })
+      row.isVisible = true;
+    });
   }
   return rows;
-
 }
 
 const columns: any[] = [
-  {
-    type: 'text',
-    name: 'name',
-    required: true,
-    label: 'name',
-    align: 'left',
-    sortable: true,
-  },
-  {
-    type: 'checkbox',
-    name: 'completed',
-    label: 'completed',
-    sortable: true
-  },
-  {
-    type: 'action',
-    name: 'delete',
-    label: '',
-    action: deleteRow
-  }
-];
+    {
+      type: 'text',
+      name: 'name',
+      required: true,
+      label: 'NAME',
+      align: 'left',
+    },
+    {
+      type: 'checkbox',
+      name: 'completed',
+      label: 'COMPLETED',
+    },
+    {
+      type: 'action',
+      name: 'delete',
+      label: '',
+      action: deleteRow
+    }
+  ];
 
 </script>
 
 <template>
   <div class="app">
-    <q-btn color="primary" @click="addRow" icon="add" class="add-button"></q-btn>
-
-    <q-table title="To Do" :rows="rows" :columns="columns" :filter-method="onFilter" :filter="filter" row-key="name"
-      binary-state-sort>
+    <div class="buttons">
+    <q-btn color="primary" @click="addRow" icon="add" class="button"></q-btn>
+    <q-btn color="primary" @click="clearCompleted" icon="delete" class="button"></q-btn>
+  </div>
+    <q-table title="To Do" :rows="rows" :table-header-class="{ 'table-header': true }" :columns="columns"
+      :filter-method="onFilter" :filter="filter" row-key="name" binary-state-sort hide-pagination>
       <template v-slot:top-right>
         <q-checkbox v-model="filter.isChecked" label="Show only completed"></q-checkbox>
       </template>
 
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td v-for="col in columns" :key="col.name" :props="props">
+          <generic-row v-if="props.row.isVisible" :items="rows" :item="props.row" :itemProps="props" :columns="columns"
+            @change="onChange" @addSubItem="addSubItem"></generic-row>
+        </q-tr>
 
-            <!-- // text component -->
-            <text-row v-if="col.type === 'text'" :text="props.row[col.name]" :isLineThrough="props.row.completed"
-              @change="(value) => onChange(value, props.row, col.name)"></text-row>
-
-            <!-- // checkbox component -->
-            <q-checkbox v-else-if="col.type === 'checkbox'" v-model="props.row[col.name]"></q-checkbox>
-
-            <!-- // btn component -->
-            <q-btn v-else-if="col.type === 'action'" color="negative" :icon-right="col.name" no-caps flat dense
-              @click="col.action(rows.indexOf(props.row))" />
-          </q-td>
+        <!-- subitems -->
+        <q-tr v-for="(item, index) in props.row.subItems" :key="index" :props="props" colspan="100">
+          <generic-row v-if="item.isVisible" :items="props.row.subItems" :isSubItem="true" :item="item"
+            :itemProps="props" :columns="columns" @change="onChange"></generic-row>
         </q-tr>
       </template>
     </q-table>
@@ -115,10 +157,25 @@ const columns: any[] = [
   margin: 20px;
 
 }
+
+.q-table__card {
+  background: #005b89 !important;
+  color: white !important;
+}
+
+.q-table {
+  background: #9ab6d3;
+  font-size: 15px;
+  font-weight: 800;
+}
 </style>
 
 <style scoped>
-.add-button {
+.buttons{
+  display: flex;;
+}
+
+.button {
   width: 40px;
   height: 40px;
   padding: 0.375rem 1rem 0.3125rem;
@@ -126,6 +183,7 @@ const columns: any[] = [
   color: #fff;
   box-shadow: 0 4px 9px -4px #ffffff;
   margin-bottom: 20px;
+  margin-left: 20px;
 }
 </style>
 
